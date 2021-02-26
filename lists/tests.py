@@ -7,6 +7,25 @@ from lists.views import home_page
 from lists.models import Item
 
 
+class ListViewTest(TestCase):
+    """ тест представления списка """
+
+    def test_uses_list_template(self):
+        """ тест: используется шаблон списка """
+        response = self.client.get("/lists/unicum-list/")
+        self.assertTemplateUsed(response, "list.html")
+
+    def test_displays_all_list_items(self):
+        """ тест: отображаются все элементы списка """
+        Item.objects.create(text="itemey 1")
+        Item.objects.create(text="itemey 2")
+
+        response = self.client.get("/lists/unicum-list/")
+
+        self.assertContains(response, "itemey 1")
+        self.assertContains(response, "itemey 2")
+
+
 class HomePageTest(TestCase):
     """ тест домашней страницы """
 
@@ -27,22 +46,12 @@ class HomePageTest(TestCase):
         """ тест: переадресует после POST-запроса """
         response = self.client.post("/", data={"item_text": "A new list item"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["location"], "/")
+        self.assertEqual(response["location"], "/lists/unicum-list/")
 
     def test_only_saves_items_when_necessary(self):
         """ тест: сохраняет элементы списка, только когда нужно"""
         self.client.get("/")
         self.assertEqual(Item.objects.count(), 0)
-
-    def test_displays_all_list_items(self):
-        """ тест: отображаются все элементы списка """
-        Item.objects.create(text="itemey 1")
-        Item.objects.create(text="itemey 2")
-
-        response = self.client.get("/")
-
-        self.assertIn("itemey 1", response.content.decode())
-        self.assertIn("itemey 2", response.content.decode())
 
 
 class ItemModelTest(TestCase):
